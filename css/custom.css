@@ -1,0 +1,40 @@
+.section {
+  padding: 8rem 0 7rem;
+  text-align: center;
+}
+
+.section-heading,
+.section-description {
+  margin-bottom: 1.2rem;
+}
+
+.font-medium {
+  font-weight: 500;
+  font-size: 2rem;
+}
+
+.text-nikel {
+  color: #727472;
+}
+
+.text-red {
+  color: #ff3b3b;
+}
+
+.avatar {
+  max-width:200px
+}
+
+.svg-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.bi {
+  color: #727472;
+  padding: 4px;
+}
+
+.bi:hover {
+  color: black;
+}
