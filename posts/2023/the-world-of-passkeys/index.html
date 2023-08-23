@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/normalize.css">
     <link rel="stylesheet" href="/css/skeleton.css">
     <link rel="stylesheet" href="/css/custom.css">
+    <link rel="stylesheet" href="/css/backgrounds.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
     <!-- Google tag (gtag.js) -->
@@ -30,12 +31,81 @@
         <div class="row">
           <h1>The world of Passkeys</h1>
           <div class="font-medium text-nikel">
-            <p>Coming soon! WIP!</p>
+            <p>August 22, 2023</p>
           </div>
-          <div class="section-divider"></div>
+          <div class="section-divider section-divider-purple-ish"></div>
         </div>
         <div class="row">
           <div class="docs-section font-medium max-w-prose mx-auto text-prose">
+            <p>Hello there y’all.</p>
+            <p>This blog was planned to be written about a month ago and, after reading my “Next up” summary, I remembered the reason why: I’ve assembled a group of friends and joined an AML/CFT (month-long) Hackathon where we came in 2nd place (🎉)! Can you guess what was the main tech of our team’s solutions???</p>
+            <p>Have you guessed it already??</p>
+            <p>.</p>
+            <p>.</p>
+            <p>.</p>
+            <p>.<span style="font-style:italic">&lt;I am going to save you some scrolling&gt;</span></p>
+            <p>.</p>
+            <p>.</p>
+            <p>PASSKEYS! 🥳</p>
+            
+            <p>So, maybe more about the (month-long) Hackhaton in another blog post… so let’s get into the World of Passkeys.</p>
+
+            <p>After all the research, reading, and studying I did about the topic, and after building a P2P passkeys validation Ruby app (for the hackathon), I define passkeys as a public/private key pair, used to implement a challenge based authentication.</p>
+
+            <p>Its main goal is to replace passwords for user authentication, or at least to reduce the over reliance on passwords, while providing a more secure (compared with passwords) technology for authentication.</p>
+
+            <p>Under the hood, it uses public key encryption, so in order to authenticate, instead of providing your username and password to a website, the user and the website do what I like to call the “public/private key encryption dance”!</p>
+
+            <ol>If you are around tech for long, it is very likely that you've heard about ‘public key encryption’. The “dance” has the following moves:
+              <ol>
+                <li>User goes to a website and identify itself</li>
+                <li>Website sends a text back to the user</li>
+                <li>User encrypts that text with its private key and send it back to the website</li>
+                <li>Website tries to decrypt it with the user’s public key</li>
+                <li>And voilà!</li>
+              </ol>
+            </ol>
+
+            <p>So, if I ‘tell’ a website that I am Helio, and I sign a piece of text that can (only) be decrypted with Helio’s public key, then the website accepts for a fact that I am Helio! Voilà!</p>
+
+            <p>If it quacks like a duck and it signs a digital signature, using a public key encryption algorithm, with the private key of a given duck, then it is that one instance of a 🦆 (aka <a href="https://en.wikipedia.org/wiki/Duck_test">The 🦆 test!</a>)</p>
+
+            <p>So, in the World of Passkeys, signing up for a website means you (actually your Browser and your OS) create a public/private key, send the public key along with the sign up info (Name, email, username…) to the website, and store the private key (along with other metadata) in your Apple/Microsoft/Google account, protected using your device biometrics.</p>
+
+            <p>And during the sign in, you (and your browser and your OS) and the website and do the public/private key encryption dance I’ve mentioned above! Each one of ‘you’ doing a little bit of the dance plus your device biometrics validation.</p>
+
+            <p>So, in the world of passkeys, the important authentication information is not your password, it is your private key.</p>
+            <p>If your private key gets leaked, then your account is exposed.</p>
+            <p>But given your private key is now stored behind your device biometrics (touchID or faceID) you are protected with an extra layer.</p>
+
+            <p>Also, another interesting point is that websites now only store public information [your sign up info (name, username, email) and your public key], no bad actor will go after every single website you have an account on anymore… They will have to go after Apple/Microsoft/Google, which is the entity ‘you are trusting’ to store your private key.</p>
+
+            <p>So, this sums up what I’ve wanted to cover in this article!</p>
+
+            <p>Before I go, here is the Passkeys Iceberg I’ve used in a meetup talk about not too long ago!</p>
+            <div>
+              <img src="/images/posts/passkeys_iceberg.png" alt="Passkeys Iceberg" class="responsible-image" />
+            </div>
+            <p>Passkeys is a really broad talk and technology stack! There is plenty to study!</p>
+            <p><div class="quote">Disclaimer: the pentagon labeled ‘This talk’ refers to the amount of content I was talking about during my meetup presentation, which serves as analogy about this blog post! ;-)</div></p>
+
+            <ul>If you want to know more, do checkout the following links:
+              <ul>
+                <li><a href="https://passkeys.dev">https://passkeys.dev</a></li>
+                <li><a href="https://webauthn.guide">https://webauthn.guide</a></li>
+                <li><a href="https://fidoalliance.org/passkeys">https://fidoalliance.org/passkeys</a></li>
+                <li><a href="https://github.com/ruby-passkeys">https://github.com/ruby-passkeys</a></li>
+              </ul>
+            </ul>
+
+            <p>If you have any questions or comments, hit me up on <a rel="me" href="https://ruby.social/@hacrods"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" fill="currentColor" class="bi-inline bi-mastodon" viewBox="0 0 16 16">
+              <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+            </svg></a> or by <a href="mailto:helio@tcard.io"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi-inline bi-envelope" viewBox="0 0 16 16">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+            </svg></a>.</p>
+            <p>Or just say hi <a rel="me" href="https://ruby.social/@hacrods"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" fill="currentColor" class="bi-inline bi-mastodon" viewBox="0 0 16 16">
+              <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+            </svg></a>, if you liked it!</p>
           </div>
         </div>
       </div>

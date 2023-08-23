@@ -9,7 +9,11 @@
 }
 
 .section-divider {
-  border-top: 1px solid #eee;
+  border-top: 4px solid #eee;
+}
+
+.section-divider-purple-ish {
+  border-color: rgb(36.08% 18.43% 99.61% / 0.4);
 }
 
 .docs-section {
@@ -44,7 +48,11 @@
 }
 
 .avatar {
-  max-width:200px
+  max-width:200px;
+}
+
+.responsible-image {
+  width: 85%;
 }
 
 .svg-icon {
@@ -69,4 +77,19 @@
 
 .bi-inline:hover {
   color: black;
+}
+
+.quote {
+  padding: 1rem 1.5rem;
+  background-color: #F1F1F1;
+  border: 1px solid #E1E1E1;
+  margin: 0 .2rem;
+  border: 1px solid #E1E1E1;
+  border-radius: 4px;
+  font-size: 90%;
+  font-family: monospace, monospace;
+}
+
+a {
+  color: rgb(36.08% 18.43% 99.61%);
 }
