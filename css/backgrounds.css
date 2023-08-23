@@ -1,0 +1,22 @@
+.section-divider-purple-ish {
+  border-color: rgb(36.08% 18.43% 99.61% / 0.4);
+}
+
+.responsible-image {
+  width: 85%;
+}
+
+quote {
+  padding: 1rem 1.5rem;
+  background-color: #F1F1F1;
+  border: 1px solid #E1E1E1;
+  margin: 0 .2rem;
+  border: 1px solid #E1E1E1;
+  border-radius: 4px;
+  font-size: 90%;
+  font-family: monospace, monospace;
+}
+  
+a {
+  color: rgb(36.08% 18.43% 99.61%);
+}
