@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title>An OSS tale, or 2</title>
+  <meta name="description" content="An OSS tale, or 2" />
+  <meta name="author" content="Helio Cola" />
+  <link rel="icon" type="image/x-icon" href="/images/hacrods.gif">
+
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/skeleton.css">
+  <link rel="stylesheet" href="/css/custom.css">
+  <link rel="stylesheet" href="/css/backgrounds.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-F5XQ46J2G2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-F5XQ46J2G2');
+  </script>
+  <script src="/js/scale.fix.js"></script>
+
+  <style>
+    .light-quote {
+      padding: 0.1rem 1.5rem 0.1rem 1.5rem;
+      background: #F1F1F1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="section">
+      <div class="row">
+        <h1>An OSS tale, or 2</h1>
+        <div class="font-medium text-nikel">
+          <p>November 5, 2023</p>
+        </div>
+        <div class="section-divider section-divider-purple-ish"></div>
+      </div>
+      <div class="row">
+        <div class="docs-section font-medium max-w-prose mx-auto text-prose">
+          <p>Hi there y'all!</p>
+          <p>Today, the title of my post is: <span class="spkeym-purple">"An OSS tale, or 2"</span>.</p>
+
+          <p>If you've been around where I am, or somewhat following the things I've been doing, you may remember a talk I gave where I ran <span class="spkeym-purple">brakeman</span> on some OSS repositories, GitLab included, and compared the results.</p>
+
+          <p>I even put together a talk called "Let's Brakeman" and submitted to <span class="spkeym-purple">RubyConf Thailand</span>, but I also submitted a "The World of Passkeys 🤝🏽 Ruby", which ended up being accepted over the brakeman one...</p>
+
+          <p>I also managed to inject a console.log into an SVG that got printed out in the browser's console...</p>
+
+          <p>But let me get back to the <span class="spkeym-purple">OSS tale</span> of this post!</p>
+
+          <p>So, a month or so ago (or maybe more), I started poking around <span class="spkeym-purple">GitLab</span> repo.</p>
+          <p>If you are not familiar with GitLab, don't worry... I created an account 2 years ago, but only a few months ago I actually started using... To put it in perspective, I created my GitHub account 12 years ago.</p>
+
+          <p>I had run <span class="spkeym-purple">'brakeman'</span> on it and the report was massive... given the repo itself is massive and for many other reasons...</p>
+          <p>But the GitLab brakeman report had too much stuff to review that I've decided not to try to look at it first.</p>
+
+          <p>So, I ran <code>bundler-audit</code>, and the first result: exception! <span class="spkeym-purple">Psych::Disallowed!</span> :-D</p>
+
+          <pre><code>Tried to load unspecified class: Date (Psych::DisallowedClass)</code></pre>
+
+          <p>First GitLab contribution opportunity: <span class="spkeym-purple">update bundler-audit</span>.</p>
+          <p>The main issue that was causing the exception was due to an old version of <code>bundler-audit</code> but a newer version of <code>Psych</code>.</p>
+
+          <p>If you've been around for a while, it is likely you had to deal with this issue.</p>
+
+          <p>You can see in the link <a target="_blank" href="https://github.com/rubysec/bundler-audit/issues/302#issuecomment-909362584">https://github.com/rubysec/bundler-audit/issues/302#issuecomment-909362584</a> that this has been fixed on <code>bundler-audit 0.9.0</code>, and GitLab was still using <code>v0.7.0.1</code>.</p>
+
+          <p>Issue found, code changed, problem solved, and here is the link to the MR that got merged: <a target="_blank" href="https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132470">https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132470</a>.</p>
+
+          <p>It only updates the version in <code>Gemfile</code>, and as a consequence updates <code>Gemfile.lock</code> and <code>Gemfile.checksum</code>.</p>
+
+          <p>But it took me a bit to get this merged as I ran into the GitLab learning curve.</p>
+
+          <p>So allow me a side note here to talk about what I came to call: <span class="spkeym-purple">The GitLab way</span>!</p>
+
+          <p>GitLab's way of contribution isn't the typical fork it, make changes, open a PR...</p>
+
+          <p>GitLab has and maintains a <span class="spkeym-purple">Community Fork</span> that you should push your changes to! And if you are paying close attention you may have noticed a reference to <span class="spkeym-purple">MR</span>, instead of PR.</p>
+
+          <p>You can still fork it, and make changes, but that isn't the official way and you will run into issues if you intend to make changes and contribute to it (you can find some of those here: <a target="_blank" href="https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132435">https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132435</a> - this was my first MR and first attempt on updating <code>bundler-audit</code> on my own forked repo! :-D).</p>
+
+          <p>So, once I changed to using the <span class="spkeym-purple">GitLab Community</span> fork, I was able to push my changes, let CI run, and send the MR for review by the GitLab team.</p>
+
+          <p>In total, from my first MR/commit until approval it took about 2 days.</p>
+          <p>It is worth mentioning that I've spent a few days (an hour here, and hour there...) to be able to have the issue figured out and be in a position to open the MR!</p>
+
+          <p>But now I can run <code>bundler-audit</code> successfully! And... And...</p>
+
+          <p>And the result? 3 gems with CVE alert: <code>uri</code>, <code>sidekiq</code>, and <code>RedCloth</code>!</p>
+
+          <p><span class="spkeym-purple">Current status</span> (as of 'now' - the time of writing this post): I've managed to open MRs to update both <code>uri</code> and <code>sidekiq</code>! <code>RedCloth</code> is still on the version flagged by <code>bundler-audit</code> as having a CVE (perhaps more details about in the next post)!</p>
+
+          <p>The easiest one: <code>uri</code>!</p>
+
+          <p>This seemed to me to be the easiest one because it was a <span class="spkeym-purple">minor version</span> update: from <code>v0.12.1</code> to <code>v0.12.2</code>. And it indeed was easy. No issues during the review process, and it went from MR to approval in about 2 days.</p>
+
+          <p><span class="spkeym-purple">One important detail</span>: these are CVE and security related MRs. So the <span class="spkeym-purple">GitLab AppSec team</span> gets flagged for review, and it usually takes precedence over other things... if it runs CI successfully, if the security scans runs successfully and looks good, the MR is cleared to be merged...</p>
+
+          <p>But still small MRs (it changes 1 gem, 1 minor version) gets a lot of eyeballs! That is because the AppSec Team gets tagged, lots of Security Engineers end up checking it out.</p>
+
+          <p>Here is the link to the MR: <a target="_blank" href="https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132743">https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132743</a> .</p>
+
+          <p>Noticed that <span class="spkeym-purple">23 participants</span> were involved (some bots, mostly humans). There is a Sec Bot that triggers internal actions, vulnerability scan results must be checked etc.</p>
+
+          <p>Ok, now <code>bundler-audit</code> is good, <code>uri</code> is good, so what is next? <code>RedCloth</code> and <code>Sidekiq</code>!</p>
+
+          <p>This was the first time I've heard of <code>RedCloth</code> (which is ok, normal, expected...), but I've heard a dozen times about <code>Sidekiq</code>.</p>
+
+          <p>I don't recall now which gem I started looking into first, but as for this post, I will talk first about <span class="spkeym-purple">Sidekiq</span> as this one has been updated already.</p>
+
+          <p>GitLab was running <code>sidekiq</code> version 6.5.7, a not too old version in the 6.x series.</p>
+          <p>At the time I first started looking into this, the <code>bundler-audit</code> suggested solution was to move to the <span class="spkeym-purple">7.x series</span>.</p>
+
+          <p>When I upgraded and ran <code>bundle install</code>, guess what happened? It failed!</p>
+
+          <p>It complained about dependency conflict! GitLab uses a gem called <code>gitlab-sidekiq-fetcher</code> that supports only <span class="spkeym-purple">Sidekiq 6.x</span> series.</p>
+
+          <p>I will not talk much about this gem, but you can check it out here: <a target="_blank" href="https://gitlab.com/gitlab-org/ruby/gems/sidekiq-reliable-fetch">https://gitlab.com/gitlab-org/ruby/gems/sidekiq-reliable-fetch</a>.</p>
+
+          <p>So, given I needed Sidekiq 7.x (to include the CVE fix) and sidekiq-reliable-fetch only supports 6.x, the only alternative would be to remove the <code>sidekiq-reliable-fetch</code> gem.</p>
+
+          <p>I did some research on this gem and started writing up this MR: <a target="_blank" href="https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133042">https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133042</a> with the strategy of updating <code>sidekiq</code> to 7.x series and removing <code>sidekiq-reliable-fetch</code>.</p>
+
+          <p>With some twists and turns, this MR took 4 weeks to be merged, since the day I created it.</p>
+
+          <p><span class="spkeym-purple">If you are still here with me</span> and plan to continue on reading, I will explain some of the why's it took 4 weeks for this MR to be merged! (remember: the first 2 MRs took 2 days to be merged)</p>
+
+          <p>I first created the MR as a draft and I knew the only way out would be to include the <span class="spkeym-purple">GitLab Team</span> and ask tons of questions. Removing a gem that patches sidekiq on a code base as big as GitLab is a lot of work and not very suitable for community/OSS contributions. This usually needs a lot of internal considerations, talking to several people, higher risk of causing unwanted effects, and so on and so forth. I was not very optimistic this would have chances to be merged.</p>
+
+          <p>But I dug into the <code>gitlab-reliable-fetcher</code> gem to understand it and found out it was created due to scalability reasons. Under the hood, it uses <span class="spkeym-purple">Redis "rpoplpush"</span>.</p>
+
+          <p>You can check more about that here: <a target="_blank" href="https://github.com/TEA-ebook/sidekiq-reliable-fetch">https://github.com/TEA-ebook/sidekiq-reliable-fetch</a>.</p>
+
+          <p>I even created an issue on <code>sidekiq-reliable-fetch</code> to support Sidekiq 7.1 (ref: <a target="_blank" href="https://gitlab.com/gitlab-org/ruby/gems/sidekiq-reliable-fetch/-/issues/35">https://gitlab.com/gitlab-org/ruby/gems/sidekiq-reliable-fetch/-/issues/35</a>) but later I found a comment from Mike Perham (creator of Sidekiq) (ref: <a target="_blank" href="https://github.com/sidekiq/sidekiq/issues/5788#issuecomment-1736298208">https://github.com/sidekiq/sidekiq/issues/5788#issuecomment-1736298208</a>) indicating Sidekiq is already using the Redis command that deprecated the "rpoplpush".</p>
+          
+          <p>To me, that was another reason to deprecate the usage of this gem all together and migrate to Sidekiq 7.1. It was also even more clear this would be a long battle but one <span class="spkeym-purple">worth fighting</span>. Perhaps not me pushing for it, but I could at least raise the questions and let the GitLab Team to prioritize it. I would still be an extra pair of eyes following along with the work and helping where I can, as an OSS contributor.</p>
+
+          <p>Migrating <code>sidekiq</code> one major version (from 6 to 7), deprecating an usage of another gem, that uses a deprecated Redis command (this part would actually help accomplish the task), in a repository as big as <span class="spkeym-purple">GitLab</span>, while competing with all other internal priorities sealed the deal for me: this isn't a good work for a community/OSS MR!</p>
+
+          <p>I still plan on getting that ball rolling on GitLab: migrate to Sidekiq 7.x series and remove <code>sidekiq-reliable-fetch</code>. But this MR is a "I want to get rid of the CVE", and not make a revolution. I ok if this marks the beginning of one...</p>
+
+          <p>And so I've got busy with other things and left the MR in Draft, for a few days.</p>
+
+          <p>Until one day that I ran <code>bundler-audit</code> again, for some random reason, and noticed that there was a <code>Sidekiq</code> version on the 6.x series that fixed the CVE! That was just the perfect thing!</p>
+
+          <p>First I don't need to open the <code>sidekiq-reliable-fetch</code> Pandora's box, nor discuss whether Sidekiq 7.x suffice for the scalability reasons that made the <span class="spkeym-purple">GitLab team</span> to invest in the <code>sidekiq-reliable-fetch</code>, and this is now a minor version upgrade! I could just upgrade to the latest 6.x and the CVE alert would be cleared.</p>
+
+          <p>So I renamed the MR title and the description to indicate that the goal now was to update to the latest 6.x and not 7.x anymore. Created a fresh branch based on the latest root branch, upgraded <code>Sidekiq</code> to latest on 6.x series (including Gemfile.checksum), and (force) pushed the MR upstream: <span class="spkeym-purple">let CI run!</span></p>
+
+          <p>And CI did run... and once it ran... the result?!?! <span class="spkeym-purple">Failed!</span></p>
+          <p>I was still confident it would be easier than upgrading to the 7.x series but perhaps not as easy as the <code>uri</code> gem!</p>
+
+          <p>While digging through the failures, I found 2 that traces back to a validation like this:</p>
+          <p><div class="light-quote">
+            <pre>if Gem::Version.new(Sidekiq::VERSION) != Gem::Version.new('6.5.7')
+  raise 'New version of sidekiq detected, please remove or update this patch'
+end</pre></div></p>
+
+          <p>Basically what this does is to fail CI if you update the <code>Sidekiq</code> version and require the developer to validate whether the sidekiq patches are being affected! It could have fixed the patch or it could have changed the underlying code requiring the patch to evolve.</p>
+
+          <p>And there are 2 of those inside the GitLab repository.</p>
+
+          <p>After digging into each one of them and I concluded (after perhaps a few hours of work, across a few days, thinking, reading, and reviewing code in Sidekiq and GitLab, and thinking a little more) that it was safe to just update the version of <code>Sidekiq</code> in these patches as well, from <span class="spkeym-purple">6.5.7 to 6.5.12</span>.</p>
+
+          <p>With those changes, the CI ran successfully and all tests were <span class="spkeym-purple">green</span> (or should I say purple?).</p>
+
+          <p>Finally, I changed the MR from Draft to Open, tagged it for review, and added comments to these lines indicating I had done some review, but I would like the reviewer to validate my analysis.</p>
+
+          <p>You can check all that history here: <a target="_blank" href="https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133042">https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133042</a>.</p>
+          
+          <p>This MR was merged a few days ago, on October 25th, which means it took 26 days from creation to being approved and merged.</p>
+
+          <p>So, this is now scheduled to be release with Gitlab v16.6 on November 10th 2023 (ref: <a target="_blank" href="https://gitlab.com/groups/gitlab-org/-/milestones/93#tab-issues">https://gitlab.com/groups/gitlab-org/-/milestones/93#tab-issues</a>).</p>
+
+          <p>The intriguing thought in my head now is that if I, and the others reviewed this MR, missed something, in a few days we may have some production issues... which may be traced back to these changes, and to this tale!</p>
+
+          <p>If you are still here with me, first are foremost: keep your fingers crossed for me! And don't forget to say <span class="spkeym-purple">Hi</span> on <a rel="me" href="https://ruby.social/@hacrods"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" fill="currentColor" class="bi-inline bi-mastodon" viewBox="0 0 16 16">
+            <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+          </svg></a>.</p>
+
+          <p>Once I was done with <code>sidekiq</code> upgrade, the next on deck is the <span class="spkeym-purple">RedCloth gem</span>! Or should I say <code>RedRedCloth</code> gem?</p>
+
+          <p>And that, esteemed gentleperson, is my OSS tale, or 2!</p>
+
+          <p>If you liked it, say <span class="spkeym-purple">Hi</span> on <a rel="me" href="https://ruby.social/@hacrods"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" fill="currentColor" class="bi-inline bi-mastodon" viewBox="0 0 16 16">
+            <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+          </svg></a> or by (the good and old fashioned) <a href="mailto:helio@tcard.io"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi-inline bi-envelope" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+          </svg></a>! :-D</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
