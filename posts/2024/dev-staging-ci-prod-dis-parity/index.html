@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title>Dev, Staging, CI, and Prod (dis)parity</title>
+  <meta name="description" content="Dev, Staging, CI, and Prod (dis)parity" />
+  <meta name="author" content="Helio Cola" />
+  <link rel="icon" type="image/x-icon" href="/images/hacrods.gif">
+
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/skeleton.css">
+  <link rel="stylesheet" href="/css/custom.css">
+  <link rel="stylesheet" href="/css/backgrounds.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-F5XQ46J2G2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-F5XQ46J2G2');
+  </script>
+  <script src="/js/scale.fix.js"></script>
+
+  <style>
+    .light-quote {
+      padding: 0.1rem 1.5rem 0.1rem 1.5rem;
+      background: #F1F1F1;
+      border: 1px solid #E1E1E1;
+      border-radius: 4px;
+    }
+
+    .rainbow {
+        background: red;
+        background: -webkit-linear-gradient(left, orange , yellow, green, cyan, blue, violet);
+        background: -o-linear-gradient(right, orange, yellow, green, cyan, blue, violet);
+        background: -moz-linear-gradient(right, orange, yellow, green, cyan, blue, violet);
+        background: linear-gradient(to right, orange , yellow, green, cyan, blue, violet);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .blink_me {
+      animation: blinker 1s linear infinite;
+    }
+
+    @keyframes blinker {
+      50% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="section">
+      <div class="row">
+        <h1>Dev, Staging, CI, and Prod (dis)parity</h1>
+        <div class="font-medium text-nikel">
+          <p>May 9, 2024</p>
+        </div>
+        <div class="section-divider section-divider-purple-ish"></div>
+      </div>
+      <div class="row">
+        <div class="docs-section font-medium max-w-prose mx-auto text-prose">
+          <p>Hi there y'all!</p>
+
+          <p>Remember when some of our teammates argue about <span class="spkeym-purple">"Production Parity"</span>? That Staging must be like Production? Or shout out <span class="spkeym-purple">"it worked on my machine"?</span></p>
+          <p>Have you heard this one: <span style="font-style:italic">"it worked on <span class="spkeym-purple">my machine</span>, it is green <span class="spkeym-purple">CI</span>, test coverage report is <span class="spkeym-purple">>80%</span>, it worked on staging, manual smoke/regression tests found nothing" but it still <span class="spkeym-purple">doesn't work</span> in Production"</span>?</p>
+          <p>So (for the context of this post) this is about <span class="spkeym-purple">parity</span> [or, if you prefer, <span class="spkeym-purple">(dis)parity</span>]! This is about having the same underlying infrastructure and configuration, so the software behavior becomes <span class="spkeym-purple">predictable</span> when you deploy to your users.</p>
+          <p>There are also those folks who prefer to <span class="spkeym-purple">test in Production</span>, which in several cases is a valid and sometimes the only possible strategy, but in some cases it may just be because <span class="spkeym-purple">everything works</span> in their Staging environment! 🤣</p>
+          <p>On a more serious note, what is important here is neither parity nor testing in production, is understanding what is <span class="spkeym-purple">acceptable and expected</span> for your Company, Organization, Startup, Team, and your Users! If you work on a team that will shame you for a failed production deployment (when it works on local, CI, and staging, remember?) then you need to learn to ignore, plan to move on, or else.</p>
+          <p>If you work on a team where there aren't strong and mature rollback procedures, or there isn't a status page with uptime alert, monitoring and observability tools in place, then you have some work to do, and points to make. If a production deployment fails while CI, Staging, and Dev are all fine (but on 🔥)... then you got some more work to do!</p>
+          <p>But if you work on a team that is like: "Oh yeah, I am glad you found that! I don't think anyone is looking at that"... You still have work to do, but it is a lot more fun and rewarding! 🤩</p>
+          <p><div class="quote">Side note: do you know the sound of "Yo... if you get those 2 things done will be amazing!"? 🤞</div></p>
+          <p>Not too long ago, in a galaxy not too far away, I ran into this specific problem when updating a <span class="spkeym-purple">9 1/2 years old Rails app</span> from v6.1 to v7.0.</p>
+          <p>We've made 2 failed attempts to deploy it to production and we would have made a 3rd failed attempt if I hadn't buried my head in the logs to find the root cause of the 2nd failed attempt.</p>
+          <p>The issues I ran into all fall into <span class="spkeym-purple">Dev, Staging, CI, and Production (dis)parity</span>, which caused issues to only show up when deploying to production. Some have already been fixed in this (soon to be a 10 years old) Rails app, but some others are still in the TODO list.</p>
+
+          <ol>With that said, let me dive into 3 specifics issues I've had to deal with:
+            <ol>
+              <li>Rails cache_store using redis in production, and <code>null_store</code> everywhere else.</li>
+              <li>Staging environment on Heroku using RAILS_ENV=staging.</li>
+              <li>A strange Rails 7.0 auto loading behavior (or a bug, or a feature...).</li>
+            </ol>
+          </ol>
+
+          <p>The <span class="spkeym-purple">first failed attempt</span> to deploy Rails 7.0 was due to the following error:</p>
+          <p>
+            <div class="light-quote">
+              <pre>You're using a cache store that doesn't support native cache versioning.
+Your best option is to upgrade to a newer version of ActiveSupport::Cache::RedisStore
+that supports cache versioning (ActiveSupport::Cache::RedisStore.supports_cache_versioning? #=> true).
+  
+Next best, switch to a different cache store that does support cache versioning:
+https://guides.rubyonrails.org/caching_with_rails.html#cache-stores.
+  
+To keep using the current cache store, you can turn off cache versioning entirely:
+  
+    config.active_record.cache_versioning = false</pre></div></p>
+        
+          <p><span class="spkeym-purple">Side note:</span> I feel like this should be documented in the official Rails upgrade guide, but I know that sometimes what you see in <a href="https://guides.rubyonrails.org/upgrading_ruby_on_rails.html" target="_blank">https://guides.rubyonrails.org/upgrading_ruby_on_rails.html</a> is not what is the latest (meaning: doesn't include all the contributions to date).</p>
+          <p>A few years back, I've made some contributions to Rails upgrade guide and I recall something like my contributions not being backported to another branch, or having to wait until certain release (to be in <a href="https://guides.rubyonrails.org" target="_blank">guides.rubyonrails.org</a>). In the weeks to come, I will circle back on this and see if it makes sense to open a PR. 🤞</p>
+          <p>This is a <span class="spkeym-purple">specific error message</span> somewhere in Rails, related to a new behavior, where in Rails 7.0 is not supported and causes rails app to fail to start.</p>
+
+          <p>Now back to <span class="spkeym-purple">Dev/Staging/CI/Prod (dis)parity</span>...</p>
+          <p>The issue only showed up in Production because in <code>production.rb</code> we had:</p>
+          <p>
+            <div class="light-quote">
+              <pre>if ENV['REDIS_URL']
+  config.cache_store = :redis_store, { ... }
+end</pre>
+            </div>
+          </p>
+
+          <p>While Dev and CI, we had this:</p>
+          <p>
+            <div class="light-quote">
+              <pre>config.cache_store = :null_store</pre>
+            </div>
+          </p>
+
+          <p>And Staging (commented out!):</p>
+          <p>
+            <div class="light-quote">
+              <pre># Use a different cache store in production.
+# config.cache_store = :mem_cache_store</pre>
+            </div>
+          </p>
+
+          <p><code>Interesting detail:</code> because of <span class="spkeym-purple">Sidekiq</span>, we already have Redis available across the board!</p>
+
+          <p>In production, the app was still using the <code>redis-rails gem</code>, which doesn't support the versioning feature required by Rails 7.0.</p>
+          <p>To be fair, there was a ticket in the Team's backlog talking about the necessity to get rid of <code>redis-rails gem</code>, so someone in the Dev Team was on the right track. This could have never happened in Production if that tech debt ticket was taken care of, but it was forgotten by the time I started working with this team to <span class="spkeym-purple">help upgrade Ruby and Rails</span> (dependencies, some tech debt, etc).</p>
+
+          <p>All this analysis and work was done on the next day. I took care of that task, removed <code>redis-rails gem</code>, changed <code>cache_store</code> in production to <code>:redis_cache_store</code>, changed Dev and Staging to also use it, so all the environments are more like each other, <span class="spkeym-purple">but CI</span>...</p>
+
+          <p>This work was merged to the main branch and deployed to production, and synced with the Rails 7.0 branch afterwards.</p>
+
+          <p>The <span class="spkeym-purple">second failed deployment</span> happened right then and there with some classic cowboy coding!</p>
+          <p>You know when your production deployment fails but <span class="spkeym-purple">you want it to succeed</span>? Or at least you had zero expectation of having a failure?! :-D</p>
+
+          <p>While I was hammering myself hard trying to understand <span class="spkeym-purple">why</span> in the world I am first seeing this <span class="spkeym-purple">in production</span> (remember: works in Dev, Staging, and CI), and trying to research about the error message, the clock ticking, and the very end of the error message started to glow, and glow, and glow some more... and <span class="blink_me spkeym-purple">blink</span> in <span class="blink_me rainbow">sparling rainbow colors</span>! 🌈</p>
+          <p>Read it again below, and see it for yourself:</p>
+          <p>
+            <div class="light-quote">
+              <pre>To keep using the current cache store, you can turn off cache versioning entirely:
+
+  config.active_record.cache_versioning = false</pre>
+            </div>
+          </p>
+
+          <p>The error message, that aborted the production deployment, <span class="spkeym-purple">had a way out</span>: you can ignore this new behavior and move on. And it provided the exact line: copy, paste, copy, paste, copy, paste, copy...</p>
+
+          <p>Can you please pause reading for a second and try to remember when was the <span class="spkeym-purple">last time</span> you were deploying something to production and it failed (should I say unexpectedly?!?!)?!?! If you are lucky, you won't have many events in memory and it may be hard to remember the exact details! For myself, it has been a few good years that I prefer not to trust my memories too much! :-D</p>
+
+          <p>After some time reading, thinking, and trying to find what to do next, my teammate and I <span class="spkeym-purple">agreed</span> to give it a try (the way out, disabling the cache_version). And once we agreed on it, my teammate proceeded with the changes, and I refocused into thinking and reading about what could be the side effects of doing that, while waiting for another production deployment attempt...</p>
+          <p>Reading through the error message and trying to <span class="spkeym-purple">think logically</span> (after a failed production deployment) I was leaning towards that being a safe bet!</p>
+
+          <ol>Here is the glimpse:
+            <ol>
+              <li>Rails 6.1 doesn't need the cache versioning</li>
+              <li>Rails 7.0 fails with a specific message about it but provides a way out</li>
+              <li>To my knowledge this app doesn't rely heavily on cache</li>
+              <li>Nobody else in the Dev Team ever mentioned anything caching related</li>
+            </ol>
+          </ol>
+
+          <p>But my head was still wandering around: how can this show up for the first time only in the Production deployment?</p>
+
+          <p>I had a dedicated Heroku Staging environment for the Rails 7.0 branch. I've done numerous deployments of this branch to the Staging env... but still it worked on Staging (🔥) and it failed in Production (<img src="/images/posts/jt_is_lost.gif" style="max-height:20px;margin-bottom:-2px"></img>)!</p>
+
+          <p>As I was going through all that in my head, I got another notification popping up. It read (something along the lines): "I deployed the <code>cache_versioning = false</code> and it <span class="spkeym-purple">worked</span>, but we are getting <span class="spkeym-purple">HTTP 503</span> from the uptime/status check.".</p>
+          <p>Disabling the cache versioning <span class="spkeym-purple">worked</span>, the Rails 7.0 branch was deployed successfully, <span class="spkeym-purple">but</span> just to make us stumble upon another <span class="spkeym-purple">disparity</span> between Dev/Staging/CI & Production!</p>
+          
+          <p>Given we were getting 503s, and this was the 2nd attempt, we decided to <span class="spkeym-purple">rollback</span> the deployment, and go back to the drawing board! Back to Rails 6.1 in Production and figure out where the 503s were coming from.</p>
+
+          <p>The next day I've executed the exact same steps in Staging to try to replicate the 503s, but TL'DR I could not replicate it.</p>
+          <p>It was easy to replicate the failed deployment related to the <code>cache_store</code> and <code>redis-rails gem</code>, but after setting it to false, the app worked just fine in Staging and no sign of the <span class="spkeym-purple">503s</span>! I tested the end point used for the uptime check and all was good (but on 🔥).</p>
+
+          <p>The 503s were a mystery for quite a while and I started getting suspicious about Heroku Staging using <code>RAILS_ENV=staging</code> and not production.</p>
+          <p>Looking at <code>staging.rb</code> and <code>production.rb</code> it was easy to realize that I would not be able to change <code>RAILS_ENV</code> in Staging before Rails 7.0 deployment. Things like bucket name, api keys, server host are not fully & consistently configured. I was using a Heroku <span class="spkeym-purple">'Staging-2'</span> app, which shares buckets with a Heroku Staging app... so... this was not a battle I would be able to pick...</p>
+          <p>As I was gearing up for another Rails 7.0 deployment, I was still concerned about not knowing the root cause of the 503s! So I decided to ask if we could set up a log management tool, just to find out that it was already being pushed over to AppSignal! GREAT! 🦾</p>
+          <p>I was not very optimistic that the 503s would not happen again! Even though we found and changed some things, the root cause for the 503s were still unknown, so I dove into the logs and found the following error message:</p>
+          <p>
+            <div class="light-quote">
+              <pre>app web.4 - [37] ! Unable to load application: 
+NameError: uninitialized constant WickedPdf::OpenStruct</pre>
+            </div>
+          </p>
+
+          <p>The missing root cause problem was solved! The web dynos were failing to load the app because it could not find <code>WickedPdf::OpenStruct</code>.</p>
+          <p>During the load process, the app with Rails 7.0 was failing to find <code>WickedPdf::OpenStruct</code>. <code>OpenStruct</code> comes with Ruby and <code>WickedPdf gem</code> (in its latest version) is in the app for quite some time. It works just fine with Rails 6.1, it works just fine in Staging with Rails 7.0! <span class="spkeym-purple">But production...</span></p>
+
+          <p>The Rails 6.1 app already had <span class="spkeym-purple">Zeitwerk</span> enabled in production for at least a week, so I was not expecting any issues loading the app... It is possible that WickedPdf needs to refer to <code>'::OpenStruct'</code> instead of just <code>'OpenStruct'</code>. Or that it should be in WickedPdf gemspec as a dependency... but still Rails 7.0 loaded everything just fine on Heroku Staging env (which uses RAILS_ENV=staging), and the generate PDF feature was also working...</p>
+
+          <p>In the coming weeks I will circle back on this and ask in the WickedPdf repo, or perhaps in the Rails discussion forums whether this could be an edge case of Zeitwerk or somewhere else in Rails! 🤞</p>
+
+          <p>Once it was determined the 503s were due to WickedPdf preventing the app from loading, I discovered a work-around [which I still could not replicate it in Staging (remember: Staging all was good and on 🔥)], but I was now <span class="spkeym-purple">confident</span> for another attempt deploying the Rails 7.0 branch.</p>
+ 
+          <p>And this time <span class="spkeym-purple">it worked</span>! The app booted just fine, and Rails 7.0 was finally in production.</p>
+
+          <p>Rails 7.0 is in production, some tech debt was paid, new tech debt was uncovered, all of it is documented in my head, some of it already in the task management tool being used!</p>
+
+          <p><span class="spkeym-purple">Next time</span> you do a Rails deployment, please check the <code>config.cache_store</code>, pay closer attention to the differences in the environments, raise the point Staging apps should run RAILS_ENV=production (BTW: Heroku deployment warns you about it), but keep in mind that perfect parity is unlikely to be achievable or is expensive enough that makes it cheaper to test in Production! 🦾</p>
+
+          <p>And at last but not least: don't practice cowboy coding! At least not very often! Do understand that when not used in excess it can save you a failed deployment or two! Like testing in Production, deploying code to Production on Friday... 🤣</p>
+
+          <p>If you liked it, say <span class="spkeym-purple">Hi</span> on <a rel="me" href="https://ruby.social/@hacrods"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" fill="currentColor" class="bi-inline bi-mastodon" viewBox="0 0 16 16">
+            <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+          </svg></a> or by (the good and old fashioned) <a href="mailto:helio@tcard.io"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi-inline bi-envelope" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+          </svg></a>! :-D</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
